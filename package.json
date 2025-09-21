@@ -1,0 +1,14 @@
+{
+  "name": "nirax-express-app",
+  "version": "1.0.0",
+  "description": "Express.js app with /api/search/:code route to proxy requests to Nirax API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "crypt": "^0.0.2",
+    "express": "^4.18.2"
+  }
+}
