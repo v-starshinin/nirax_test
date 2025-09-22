@@ -6,7 +6,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
-// Base URL for the external API
 const BASE_URL = 'https://web.nirax.ru/cross/api/v3';
 const USERNAME = 'testeruser'
 const PASSWORD = '123456'
