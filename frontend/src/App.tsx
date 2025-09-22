@@ -1,24 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
+import AlertSnackbar from './components/AlertSnackbar';
+import SearchComponent from './components/SearchComponent';
 
 function App() {
+    const [alertOpen, setAlertOpen] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+
+  const handleError = (message: string) => {
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
+
+  const handleCloseAlert = () => {
+    setAlertOpen(false);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <AlertSnackbar open={alertOpen} message={alertMessage} onClose={handleCloseAlert} />
+      <SearchComponent onError={handleError}></SearchComponent>
     </div>
   );
 }
