@@ -1,9 +1,9 @@
 const RedisCache = require('../services/redis')
 const AuthController = require('../controllers/auth')
+const errorHandlers = require('../errorHandlers')
 const USERNAME = process.env.NIRAX_USERNAME || 'testeruser';
 const PASSWORD = process.env.NIRAX_PASSWORD || '123456';
-  
-  
+
 const authMiddleware = async (req, res, next) => {
   if (!await RedisCache.hasValidToken()) {
     try {
@@ -13,7 +13,8 @@ const authMiddleware = async (req, res, next) => {
         await AuthController.refreshToken(RedisCache);
       }
     } catch (error) {
-      return handleErrorResponse(res, error);
+      await RedisCache.clearTokens()
+      return errorHandlers.remoteApiHandleErrorResponse(res, error);
     }
   }
   next();
