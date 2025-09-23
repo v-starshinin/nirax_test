@@ -1,79 +1,46 @@
 const express = require('express');
 const cors = require('cors');
 
-const AuthController = require('./src/controllers/auth')
 const ProductsController = require('./src/controllers/products')
 const RedisCache = require('./src/services/redis')
+const middlewares = require('./src/middlewares/authMiddleware')
+const errorHandlers = require('./src/errorHandlers')
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-const USERNAME = process.env.NIRAX_USERNAME || 'testeruser';
-const PASSWORD = process.env.NIRAX_PASSWORD || '123456';
 
 app.use(express.json());
 app.use(cors());
 
-const handleErrorResponse = (res, error) => {
-  if (error.response && error.response.data) {
-    res.status(error.response.status).json({ error: error.response.data.message });
-  } else {
-    res.status(error.status || 500).json({ error: error.message || 'An error occurred' });
-  }
-};
 
-app.get('/api/search/:code', async (req, res) => {
+app.get('/api/search/:code', middlewares.authMiddleware, async (req, res) => {
   const searchCode = req.params.code;
-
-  if (!RedisCache.hasValidToken()) {
-    try {
-      await AuthController.authenticate(USERNAME, PASSWORD, RedisCache);
-
-      const products = await ProductsController.fetchProducts(searchCode, RedisCache);
-      res.json(products)
-    } catch (error) {
-      handleErrorResponse(res, error);
-    }
-
-  } else {
-    try {
-      const products = await ProductsController.fetchProducts(searchCode, RedisCache);
-      res.json(products)
-    } catch (error) {
-      if (error.status === 401) {
-        try {
-          await AuthController.refreshToken(RedisCache);
-        } catch (error) {
-          if (error.status === 401) {
-            RedisCache.clearTokens()
-             try {
-              await AuthController.authenticate(USERNAME, PASSWORD, RedisCache);
-
-              const products = await ProductsController.fetchProducts(searchCode, RedisCache);
-              res.json(products)
-            } catch (error) {
-              handleErrorResponse(res, error);
-            }
-          }
-        }
-        const products = await ProductsController.fetchProducts(searchCode, RedisCache);
-        res.json(products)
-      } else {
-        handleErrorResponse(res, error);
-      }
-    }
+  try {
+    const accessToken = await RedisCache.getAccessToken();
+    const products = await ProductsController.fetchProducts(searchCode, accessToken);
+    res.json(products);
+  } catch (error) {
+    errorHandlers.remoteApiHandleErrorResponse(res, error);
   }
 });
 
-
-
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     redis: RedisCache.isConnected ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString()
   });
+});
+
+
+app.post('/api/logout', async (req, res) => {
+  try {
+    await RedisCache.clearTokens();
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 app.get('*', (req, res) => {

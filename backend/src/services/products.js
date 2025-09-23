@@ -6,7 +6,7 @@ const searchByCode = async (searchCode, token) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/parts/by-searchcode/${searchCode}`, {
       headers: {
-        Authorization: `Bearer ${token}` // Correct format without the colon
+        Authorization: `Bearer ${token}`
       }
     });
 
