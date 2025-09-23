@@ -14,9 +14,9 @@ class RedisCacheService {
       this.client = createClient({
         host: redisHost,
         port: redisPort,
-        family: 4, // Force IPv4
+        family: 4, 
         socket: {
-          family: 4 // Additional IPv4 enforcement
+          family: 4 
         },
 
       });

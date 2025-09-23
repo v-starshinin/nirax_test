@@ -5,10 +5,11 @@ import Alert from '@mui/material/Alert';
 interface AlertSnackbarProps {
   open: boolean;
   message: string;
+  code: number;
   onClose: () => void;
 }
 
-const AlertSnackbar: React.FC<AlertSnackbarProps> = ({ open, message, onClose }) => {
+const AlertSnackbar: React.FC<AlertSnackbarProps> = ({ open, message, code, onClose }) => {
 
   useEffect(() => {
     if (open) {
@@ -22,8 +23,8 @@ const AlertSnackbar: React.FC<AlertSnackbarProps> = ({ open, message, onClose })
 
   return (
     <Snackbar open={open} onClose={onClose}>
-      <Alert onClose={onClose} severity="error" sx={{ width: '100%' }}>
-        {message}
+      <Alert onClose={onClose} title={code.toString()} severity="error" sx={{ width: '100%' }}>
+        {message} 
       </Alert>
     </Snackbar>
   );

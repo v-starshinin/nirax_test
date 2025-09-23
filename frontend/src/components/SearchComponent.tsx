@@ -5,7 +5,7 @@ import productStore from "../stores/ProductStore";
 import ProductTable from "./ProductsTable";
 
 interface SearchComponentProps {
-  onError: (message: string) => void;
+  onError: (message: string, status: number) => void;
 }
 
 const SearchComponent: React.FC<SearchComponentProps> = observer(({onError}) => {
@@ -18,7 +18,7 @@ const SearchComponent: React.FC<SearchComponentProps> = observer(({onError}) => 
        const products = await productService.searchByCode(inputValue);
         productStore.setProducts(products)
     } catch (err: any) {
-      onError(err.message || 'Login failed. Please try again.');
+      onError(err.statusText, err.status);
     }
        
     };

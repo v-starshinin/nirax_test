@@ -5,9 +5,10 @@ import SearchComponent from './components/SearchComponent';
 
 function App() {
     const [alertOpen, setAlertOpen] = useState<boolean>(false);
-  const [alertMessage, setAlertMessage] = useState<string>('');
+    const [alertCode, setAlertCode] = useState<number>(500);
+    const [alertMessage, setAlertMessage] = useState<string>('');
 
-  const handleError = (message: string) => {
+  const handleError = (message: string, status: number) => {
     setAlertMessage(message);
     setAlertOpen(true);
   };
@@ -17,7 +18,7 @@ function App() {
   };
   return (
     <div className="App">
-      <AlertSnackbar open={alertOpen} message={alertMessage} onClose={handleCloseAlert} />
+      <AlertSnackbar open={alertOpen} message={alertMessage} code={alertCode} onClose={handleCloseAlert} />
       <SearchComponent onError={handleError}></SearchComponent>
     </div>
   );

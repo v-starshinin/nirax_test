@@ -6,7 +6,7 @@ const ProductsController = require('./src/controllers/products')
 const RedisCache = require('./src/services/redis')
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 const USERNAME = process.env.NIRAX_USERNAME || 'testeruser';
 const PASSWORD = process.env.NIRAX_PASSWORD || '123456';
@@ -65,6 +65,8 @@ app.get('/api/search/:code', async (req, res) => {
   }
 });
 
+
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -73,6 +75,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.get('*', (req, res) => {
+  res.status(404).send()
+})
 
 // Graceful shutdown
 const gracefulShutdown = async () => {
