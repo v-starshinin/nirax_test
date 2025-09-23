@@ -10,8 +10,6 @@ import {
 } from '@mui/material';
 import { ProductsTableProps } from '../types/Product';
 
-
-
 const ProductTable: React.FC<ProductsTableProps> = ({ products }) => {
     return (
         <TableContainer component={Paper}>

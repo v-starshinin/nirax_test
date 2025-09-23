@@ -14,7 +14,6 @@ class ProductStore {
         this.searchCode = code;
     }
 
-
     setProducts(products: Product[]) {
         this.products = products;
     }

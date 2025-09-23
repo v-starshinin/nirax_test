@@ -3,18 +3,13 @@ const cors = require('cors');
 
 const AuthController = require('./src/controllers/auth')
 const ProductsController = require('./src/controllers/products')
+const RedisCache = require('./src/services/redis')
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const BASE_URL = 'https://web.nirax.ru/cross/api/v3';
-const USERNAME = 'testeruser';
-const PASSWORD = '123456';
-
-const RedisCache = {
-  accessToken: null,
-  refreshToken: null,
-};
+const USERNAME = process.env.NIRAX_USERNAME || 'testeruser';
+const PASSWORD = process.env.NIRAX_PASSWORD || '123456';
 
 app.use(express.json());
 app.use(cors());
@@ -27,11 +22,10 @@ const handleErrorResponse = (res, error) => {
   }
 };
 
-
 app.get('/api/search/:code', async (req, res) => {
   const searchCode = req.params.code;
 
-  if (!RedisCache.accessToken) {
+  if (!RedisCache.hasValidToken()) {
     try {
       await AuthController.authenticate(USERNAME, PASSWORD, RedisCache);
 
@@ -47,7 +41,21 @@ app.get('/api/search/:code', async (req, res) => {
       res.json(products)
     } catch (error) {
       if (error.status === 401) {
-        await AuthController.refreshToken(RedisCache);
+        try {
+          await AuthController.refreshToken(RedisCache);
+        } catch (error) {
+          if (error.status === 401) {
+            RedisCache.clearTokens()
+             try {
+              await AuthController.authenticate(USERNAME, PASSWORD, RedisCache);
+
+              const products = await ProductsController.fetchProducts(searchCode, RedisCache);
+              res.json(products)
+            } catch (error) {
+              handleErrorResponse(res, error);
+            }
+          }
+        }
         const products = await ProductsController.fetchProducts(searchCode, RedisCache);
         res.json(products)
       } else {
@@ -57,6 +65,35 @@ app.get('/api/search/:code', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    redis: RedisCache.isConnected ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Graceful shutdown
+const gracefulShutdown = async () => {
+  console.log('Shutting down gracefully...');
+
+  try {
+    await RedisCache.disconnect();
+    console.log('Redis connection closed');
+  } catch (error) {
+    console.error('Error during Redis shutdown:', error);
+  }
+
+  process.exit(0);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+app.listen(port, async () => {
+  await RedisCache.connect()
   console.log(`Server is running on port ${port}`);
+  console.log(`Redis host: ${process.env.REDIS_HOST || 'localhost'}`);
+  console.log(`Redis port: ${process.env.REDIS_PORT || 6379}`);
 });

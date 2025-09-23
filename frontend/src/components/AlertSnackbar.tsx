@@ -1,4 +1,3 @@
-// src/AlertSnackbar.tsx
 import React, { useEffect } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';

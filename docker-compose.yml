@@ -1,0 +1,52 @@
+services:
+  # Redis service for caching authentication tokens
+  redis:
+    image: redis:alpine
+    container_name: nirax_redis
+    restart: unless-stopped
+    network_mode: host
+    command: redis-server --bind 0.0.0.0 --protected-mode no
+    volumes:
+      - redis_data:/data
+
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nirax_backend
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - backend/.env
+    depends_on:
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Frontend React application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nirax_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - frontend/.env
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - nirax_network
+
+volumes:
+  redis_data:
+
+networks:
+  nirax_network:
+    driver: bridge

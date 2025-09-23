@@ -5,7 +5,7 @@ import productStore from "../stores/ProductStore";
 import ProductTable from "./ProductsTable";
 
 interface SearchComponentProps {
-  onError: (message: string) => void; // Add onError prop
+  onError: (message: string) => void;
 }
 
 const SearchComponent: React.FC<SearchComponentProps> = observer(({onError}) => {

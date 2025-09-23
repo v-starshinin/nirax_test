@@ -1,7 +1,8 @@
 const ProductsService = require('../services/products');
 
 const fetchProducts = async (searchCode, RedisCache) => {
-    return await ProductsService.searchByCode(searchCode, RedisCache.accessToken);
+    const accessToken = await RedisCache.getAccessToken();
+    return await ProductsService.searchByCode(searchCode, accessToken);
 };
 
 module.exports = {
